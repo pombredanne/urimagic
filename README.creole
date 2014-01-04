@@ -1,4 +1,6 @@
+{{https://travis-ci.org/nigelsmall/urimagic.png?branch=master}}
+
 = URIMagic
 
-URIMagic is a Python library that provides full implementations of RFC3986 URIs
-and RFC6570 URI Templates.
+URIMagic is a Python library that provides full implementations of RFC 3986
+URIs and RFC 6570 URI Templates.
