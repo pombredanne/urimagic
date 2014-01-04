@@ -39,7 +39,7 @@ class URITemplate(_Part):
     """
 
     @classmethod
-    def _cast(cls, obj):
+    def __cast(cls, obj):
         if obj is None:
             return cls(None)
         elif isinstance(obj, cls):
@@ -146,31 +146,31 @@ class URITemplate(_Part):
 
     def __init__(self, template):
         super(URITemplate, self).__init__()
-        self._template = template
+        self.__template = template
 
     def __eq__(self, other):
-        other = self._cast(other)
-        return self._template == other._template
+        other = self.__cast(other)
+        return self.__template == other.__template
 
     def __ne__(self, other):
-        other = self._cast(other)
-        return self._template != other._template
+        other = self.__cast(other)
+        return self.__template != other.__template
 
     def __hash__(self):
         return hash(self.string)
 
     @property
     def string(self):
-        if self._template is None:
+        if self.__template is None:
             return None
-        return str(self._template)
+        return str(self.__template)
 
     def expand(self, **values):
         """ Expand into a URI using the values supplied
         """
-        if self._template is None:
+        if self.__template is None:
             return URI(None)
-        tokens = self._tokeniser.split(self._template)
+        tokens = self._tokeniser.split(self.__template)
         expander = URITemplate._Expander(values)
         out = []
         while tokens:

@@ -135,7 +135,7 @@ class Authority(_Part):
     """
 
     @classmethod
-    def _cast(cls, obj):
+    def __cast(cls, obj):
         if obj is None:
             return cls(None)
         elif isinstance(obj, cls):
@@ -146,33 +146,33 @@ class Authority(_Part):
     def __init__(self, string):
         super(Authority, self).__init__()
         if string is None:
-            self._user_info = None
-            self._host = None
-            self._port = None
+            self.__user_info = None
+            self.__host = None
+            self.__port = None
         else:
             if "@" in string:
-                self._user_info, string = string.rpartition("@")[0::2]
-                self._user_info = percent_decode(self._user_info)
+                self.__user_info, string = string.rpartition("@")[0::2]
+                self.__user_info = percent_decode(self.__user_info)
             else:
-                self._user_info = None
+                self.__user_info = None
             if ":" in string:
-                self._host, self._port = string.rpartition(":")[0::2]
-                self._port = int(self._port)
+                self.__host, self.__port = string.rpartition(":")[0::2]
+                self.__port = int(self.__port)
             else:
-                self._host = string
-                self._port = None
+                self.__host = string
+                self.__port = None
 
     def __eq__(self, other):
-        other = self._cast(other)
-        return (self._user_info == other._user_info and
-                self._host == other._host and
-                self._port == other._port)
+        other = self.__cast(other)
+        return (self.__user_info == other.__user_info and
+                self.__host == other.__host and
+                self.__port == other.__port)
 
     def __ne__(self, other):
-        other = self._cast(other)
-        return (self._user_info != other._user_info or
-                self._host != other._host or
-                self._port != other._port)
+        other = self.__cast(other)
+        return (self.__user_info != other.__user_info or
+                self.__host != other.__host or
+                self.__port != other.__port)
 
     def __hash__(self):
         return hash(self.string)
@@ -199,7 +199,7 @@ class Authority(_Part):
 
         :return:
         """
-        return self._host
+        return self.__host
 
     @property
     def host_port(self):
@@ -223,9 +223,9 @@ class Authority(_Part):
 
         :return:
         """
-        u = [self._host]
-        if self._port is not None:
-            u += [":", str(self._port)]
+        u = [self.__host]
+        if self.__port is not None:
+            u += [":", str(self.__port)]
         return "".join(u)
 
     @property
@@ -250,7 +250,7 @@ class Authority(_Part):
 
         :return:
         """
-        return self._port
+        return self.__port
 
     @property
     def string(self):
@@ -274,14 +274,14 @@ class Authority(_Part):
 
         :return:
         """
-        if self._host is None:
+        if self.__host is None:
             return None
         u = []
-        if self._user_info is not None:
-            u += [percent_encode(self._user_info), "@"]
-        u += [self._host]
-        if self._port is not None:
-            u += [":", str(self._port)]
+        if self.__user_info is not None:
+            u += [percent_encode(self.__user_info), "@"]
+        u += [self.__host]
+        if self.__port is not None:
+            u += [":", str(self.__port)]
         return "".join(u)
         
     @property
@@ -306,13 +306,13 @@ class Authority(_Part):
 
         :return:
         """
-        return self._user_info
+        return self.__user_info
 
 
 class Path(_Part):
 
     @classmethod
-    def _cast(cls, obj):
+    def __cast(cls, obj):
         if obj is None:
             return cls(None)
         elif isinstance(obj, cls):
@@ -323,36 +323,36 @@ class Path(_Part):
     def __init__(self, string):
         super(Path, self).__init__()
         if string is None:
-            self._segments = None
+            self.__segments = None
         else:
-            self._segments = list(map(percent_decode, string.split("/")))
+            self.__segments = list(map(percent_decode, string.split("/")))
 
     def __eq__(self, other):
-        other = self._cast(other)
-        return self._segments == other._segments
+        other = self.__cast(other)
+        return self.__segments == other.__segments
 
     def __ne__(self, other):
-        other = self._cast(other)
-        return self._segments != other._segments
+        other = self.__cast(other)
+        return self.__segments != other.__segments
 
     def __hash__(self):
         return hash(self.string)
 
     @property
     def string(self):
-        if self._segments is None:
+        if self.__segments is None:
             return None
-        return "/".join(map(percent_encode, self._segments))
+        return "/".join(map(percent_encode, self.__segments))
 
     @property
     def segments(self):
-        if self._segments is None:
+        if self.__segments is None:
             return []
         else:
-            return list(self._segments)
+            return list(self.__segments)
 
     def __iter__(self):
-        return iter(self._segments)
+        return iter(self.__segments)
 
     def remove_dot_segments(self):
         """ Implementation of RFC3986, section 5.2.4
@@ -386,7 +386,7 @@ class Path(_Part):
         return Path(out)
 
     def with_trailing_slash(self):
-        if self._segments is None:
+        if self.__segments is None:
             return self
         s = self.string
         if s.endswith("/"):
@@ -395,7 +395,7 @@ class Path(_Part):
             return Path(s + "/")
 
     def without_trailing_slash(self):
-        if self._segments is None:
+        if self.__segments is None:
             return self
         s = self.string
         if s.endswith("/"):
@@ -407,7 +407,7 @@ class Path(_Part):
 class Query(_Part):
 
     @classmethod
-    def _cast(cls, obj):
+    def __cast(cls, obj):
         if obj is None:
             return cls(None)
         elif isinstance(obj, cls):
@@ -455,38 +455,38 @@ class Query(_Part):
 
     def __init__(self, string):
         super(Query, self).__init__()
-        self._query = Query.decode(string)
-        if self._query is None:
-            self._query_dict = None
+        self.__query = Query.decode(string)
+        if self.__query is None:
+            self.__query_dict = None
         else:
-            self._query_dict = dict(self._query)
+            self.__query_dict = dict(self.__query)
 
     def __eq__(self, other):
-        other = self._cast(other)
-        return self._query == other._query
+        other = self.__cast(other)
+        return self.__query == other.__query
 
     def __ne__(self, other):
-        other = self._cast(other)
-        return self._query != other._query
+        other = self.__cast(other)
+        return self.__query != other.__query
 
     def __hash__(self):
         return hash(self.string)
 
     @property
     def string(self):
-        return Query.encode(self._query)
+        return Query.encode(self.__query)
 
     def __iter__(self):
-        if self._query is None:
+        if self.__query is None:
             return iter(())
         else:
-            return iter(self._query)
+            return iter(self.__query)
 
     def __getitem__(self, key):
-        if self._query_dict is None:
+        if self.__query_dict is None:
             raise KeyError(key)
         else:
-            return self._query_dict[key]
+            return self.__query_dict[key]
 
 
 class URI(_Part):
@@ -499,7 +499,7 @@ class URI(_Part):
     """
 
     @classmethod
-    def _cast(cls, obj):
+    def __cast(cls, obj):
         if obj is None:
             return cls(None)
         elif isinstance(obj, cls):
@@ -511,20 +511,20 @@ class URI(_Part):
         super(URI, self).__init__()
         try:
             if value.__uri__ is None:
-                self._scheme = None
-                self._authority = None
-                self._path = None
-                self._query = None
-                self._fragment = None
+                self.__scheme = None
+                self.__authority = None
+                self.__path = None
+                self.__query = None
+                self.__fragment = None
                 return
         except AttributeError:
             pass
         if value is None:
-            self._scheme = None
-            self._authority = None
-            self._path = None
-            self._query = None
-            self._fragment = None
+            self.__scheme = None
+            self.__authority = None
+            self.__path = None
+            self.__query = None
+            self.__fragment = None
         else:
             try:
                 value = str(value.__uri__)
@@ -532,51 +532,51 @@ class URI(_Part):
                 value = str(value)
             # scheme
             if ":" in value:
-                self._scheme, value = value.partition(":")[0::2]
-                self._scheme = percent_decode(self._scheme)
+                self.__scheme, value = value.partition(":")[0::2]
+                self.__scheme = percent_decode(self.__scheme)
             else:
-                self._scheme = None
+                self.__scheme = None
             # fragment
             if "#" in value:
-                value, self._fragment = value.partition("#")[0::2]
-                self._fragment = percent_decode(self._fragment)
+                value, self.__fragment = value.partition("#")[0::2]
+                self.__fragment = percent_decode(self.__fragment)
             else:
-                self._fragment = None
+                self.__fragment = None
             # query
             if "?" in value:
-                value, self._query = value.partition("?")[0::2]
-                self._query = Query(self._query)
+                value, self.__query = value.partition("?")[0::2]
+                self.__query = Query(self.__query)
             else:
-                self._query = None
+                self.__query = None
             # hierarchical part
             if value.startswith("//"):
                 value = value[2:]
                 slash = value.find("/")
                 if slash >= 0:
-                    self._authority = Authority(value[:slash])
-                    self._path = Path(value[slash:])
+                    self.__authority = Authority(value[:slash])
+                    self.__path = Path(value[slash:])
                 else:
-                    self._authority = Authority(value)
-                    self._path = Path("")
+                    self.__authority = Authority(value)
+                    self.__path = Path("")
             else:
-                self._authority = None
-                self._path = Path(value)
+                self.__authority = None
+                self.__path = Path(value)
 
     def __eq__(self, other):
-        other = self._cast(other)
-        return (self._scheme == other._scheme and
-                self._authority == other._authority and
-                self._path == other._path and
-                self._query == other._query and
-                self._fragment == other._fragment)
+        other = self.__cast(other)
+        return (self.__scheme == other.__scheme and
+                self.__authority == other.__authority and
+                self.__path == other.__path and
+                self.__query == other.__query and
+                self.__fragment == other.__fragment)
 
     def __ne__(self, other):
-        other = self._cast(other)
-        return (self._scheme != other._scheme or
-                self._authority != other._authority or
-                self._path != other._path or
-                self._query != other._query or
-                self._fragment != other._fragment)
+        other = self.__cast(other)
+        return (self.__scheme != other.__scheme or
+                self.__authority != other.__authority or
+                self.__path != other.__path or
+                self.__query != other.__query or
+                self.__fragment != other.__fragment)
 
     def __hash__(self):
         return hash(self.string)
@@ -618,18 +618,18 @@ class URI(_Part):
             string, even when the URI is undefined; in this case, an empty
             string is returned instead of :py:const:`None`.
         """
-        if self._path is None:
+        if self.__path is None:
             return None
         u = []
-        if self._scheme is not None:
-            u += [percent_encode(self._scheme), ":"]
-        if self._authority is not None:
-            u += ["//", str(self._authority)]
-        u += [str(self._path)]
-        if self._query is not None:
-            u += ["?", str(self._query)]
-        if self._fragment is not None:
-            u += ["#", percent_encode(self._fragment)]
+        if self.__scheme is not None:
+            u += [percent_encode(self.__scheme), ":"]
+        if self.__authority is not None:
+            u += ["//", str(self.__authority)]
+        u += [str(self.__path)]
+        if self.__query is not None:
+            u += ["?", str(self.__query)]
+        if self.__fragment is not None:
+            u += ["#", percent_encode(self.__fragment)]
         return "".join(u)
 
     @property
@@ -646,7 +646,7 @@ class URI(_Part):
 
         :rtype: unencoded string or :py:const:`None`
         """
-        return self._scheme
+        return self.__scheme
 
     @property
     def authority(self):
@@ -663,7 +663,7 @@ class URI(_Part):
         :rtype: :py:class:`Authority <httpstream.uri.Authority>` instance or
             :py:const:`None`
         """
-        return self._authority
+        return self.__authority
 
     @property
     def user_info(self):
@@ -681,10 +681,10 @@ class URI(_Part):
         :return: string value of user information part or :py:const:`None`
         :rtype: unencoded string or :py:const:`None`
         """
-        if self._authority is None:
+        if self.__authority is None:
             return None
         else:
-            return self._authority.user_info
+            return self.__authority.user_info
 
     @property
     def host(self):
@@ -712,10 +712,10 @@ class URI(_Part):
         :return:
         :rtype: unencoded string or :py:const:`None`
         """
-        if self._authority is None:
+        if self.__authority is None:
             return None
         else:
-            return self._authority.host
+            return self.__authority.host
         
     @property
     def port(self):
@@ -743,10 +743,10 @@ class URI(_Part):
         :return:
         :rtype: integer or :py:const:`None`
         """
-        if self._authority is None:
+        if self.__authority is None:
             return None
         else:
-            return self._authority.port
+            return self.__authority.port
 
     @property
     def host_port(self):
@@ -777,10 +777,10 @@ class URI(_Part):
         :return:
         :rtype: percent-encoded string or :py:const:`None`
         """
-        if self._authority is None:
+        if self.__authority is None:
             return None
         else:
-            return self._authority.host_port
+            return self.__authority.host_port
 
     @property
     def path(self):
@@ -798,7 +798,7 @@ class URI(_Part):
         :rtype: :py:class:`Path <httpstream.uri.Path>` instance or
             :py:const:`None`
         """
-        return self._path
+        return self.__path
 
     @property
     def query(self):
@@ -815,7 +815,7 @@ class URI(_Part):
         :rtype: :py:class:`Query <httpstream.uri.Query>` instance or
             :py:const:`None`
         """
-        return self._query
+        return self.__query
 
     @property
     def fragment(self):
@@ -832,7 +832,7 @@ class URI(_Part):
         :return:
         :rtype: unencoded string or :py:const:`None`
         """
-        return self._fragment
+        return self.__fragment
 
     @property
     def hierarchical_part(self):
@@ -851,12 +851,12 @@ class URI(_Part):
             :py:const:`None`
         :rtype: percent-encoded string or :py:const:`None`
         """
-        if self._path is None:
+        if self.__path is None:
             return None
         u = []
-        if self._authority is not None:
-            u += ["//", str(self._authority)]
-        u += [str(self._path)]
+        if self.__authority is not None:
+            u += ["//", str(self.__authority)]
+        u += [str(self.__path)]
         return "".join(u)
 
     @property
@@ -876,21 +876,20 @@ class URI(_Part):
             :py:const:`None`
         :rtype: percent-encoded string or :py:const:`None`
         """
-        if self._path is None:
+        if self.__path is None:
             return None
-        u = [str(self._path)]
-        if self._query is not None:
-            u += ["?", str(self._query)]
-        if self._fragment is not None:
-            u += ["#", percent_encode(self._fragment)]
+        u = [str(self.__path)]
+        if self.__query is not None:
+            u += ["?", str(self.__query)]
+        if self.__fragment is not None:
+            u += ["#", percent_encode(self.__fragment)]
         return "".join(u)
 
     def _merge_path(self, relative_path_reference):
-        relative_path_reference = Path._cast(relative_path_reference)
-        if self._authority is not None and not self._path:
+        if self.__authority is not None and not self.__path:
             return Path("/" + str(relative_path_reference))
-        elif "/" in self._path.string:
-            segments = self._path.segments
+        elif "/" in self.__path.string:
+            segments = self.__path.segments
             segments[-1] = ""
             return Path("/".join(segments) + str(relative_path_reference))
         else:
@@ -907,37 +906,37 @@ class URI(_Part):
         """
         if reference is None:
             return None
-        reference = self._cast(reference)
+        reference = self.__cast(reference)
         target = URI(None)
-        if not strict and reference._scheme == self._scheme:
+        if not strict and reference.__scheme == self.__scheme:
             reference_scheme = None
         else:
-            reference_scheme = reference._scheme
+            reference_scheme = reference.__scheme
         if reference_scheme is not None:
-            target._scheme = reference_scheme
-            target._authority = reference._authority
-            target._path = reference._path.remove_dot_segments()
-            target._query = reference._query
+            target.__scheme = reference_scheme
+            target.__authority = reference.__authority
+            target.__path = reference.__path.remove_dot_segments()
+            target.__query = reference.__query
         else:
-            if reference._authority is not None:
-                target._authority = reference._authority
-                target._path = reference._path.remove_dot_segments()
-                target._query = reference._query
+            if reference.__authority is not None:
+                target.__authority = reference.__authority
+                target.__path = reference.__path.remove_dot_segments()
+                target.__query = reference.__query
             else:
                 if not reference.path:
-                    target._path = self._path
-                    if reference._query is not None:
-                        target._query = reference._query
+                    target.__path = self.__path
+                    if reference.__query is not None:
+                        target.__query = reference.__query
                     else:
-                        target._query = self._query
+                        target.__query = self.__query
                 else:
-                    if str(reference._path).startswith("/"):
-                        target._path = reference._path.remove_dot_segments()
+                    if str(reference.__path).startswith("/"):
+                        target.__path = reference.__path.remove_dot_segments()
                     else:
-                        target._path = self._merge_path(reference._path)
-                        target._path = target._path.remove_dot_segments()
-                    target._query = reference._query
-                target._authority = self._authority
-            target._scheme = self._scheme
-        target._fragment = reference._fragment
+                        target.__path = self._merge_path(reference.__path)
+                        target.__path = target.__path.remove_dot_segments()
+                    target.__query = reference.__query
+                target.__authority = self.__authority
+            target.__scheme = self.__scheme
+        target.__fragment = reference.__fragment
         return target
