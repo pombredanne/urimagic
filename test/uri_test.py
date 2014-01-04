@@ -222,7 +222,8 @@ def test_can_parse_full_uri():
 def test_uri_representation():
     uri = URI("http://example.com/")
     representation = repr(uri)
-    assert representation == "URI('http://example.com/')"
+    assert representation in ("URI('http://example.com/')",
+                              "URI(u'http://example.com/')")
 
 
 def test_uri_equality():
