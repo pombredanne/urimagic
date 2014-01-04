@@ -6,4 +6,4 @@ python:
   - "3.3"
 
 # run tests
-script: test.sh
+script: py.test
