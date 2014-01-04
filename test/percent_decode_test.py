@@ -48,7 +48,7 @@ def test_can_percent_decode_reserved_chars():
 
 def test_can_percent_decode_extended_chars():
     decoded = percent_decode("El%20Ni%C3%B1o")
-    assert decoded == u"El Niño"
+    assert decoded == "El Niño"
 
 
 def test_percent_decoding_partial_extended_chars_will_fail():

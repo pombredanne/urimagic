@@ -62,5 +62,5 @@ def test_can_percent_encode_reserved_chars():
 
 
 def test_can_percent_encode_extended_chars():
-    encoded = percent_encode(u"El Niño")
+    encoded = percent_encode("El Niño")
     assert encoded == "El%20Ni%C3%B1o"
