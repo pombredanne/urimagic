@@ -1,23 +1,26 @@
-{{https://travis-ci.org/nigelsmall/urimagic.png?branch=master}}
+[![Build Status](https://travis-ci.org/nigelsmall/urimagic.png?branch=master)](https://travis-ci.org/nigelsmall/urimagic)
 
-= URIMagic
+========
+URIMagic
+========
 
-URIMagic is a Python library that provides full implementations of RFC 3986
-URIs and RFC 6570 URI Templates.
+URIMagic is a Python library that provides full implementations of RFC 3986 URIs and RFC 6570 URI Templates.
 
-== Percent Encoding & Decoding
+Percent Encoding & Decoding
+===========================
 
-{{{
+```python
 >>> from urimagic import percent_encode, percent_decode
 >>> percent_encode("Mulder & Scully")
 'Mulder%20%26%20Scully'
 >>> percent_decode("Mulder%20%26%20Scully")
 'Mulder & Scully'
-}}}
+```
 
-== Parsing a URI
+Parsing a URI
+=============
 
-{{{
+```python
 >>> from urimagic import URI
 >>> uri = URI("https://bob@example.com:8080/data/report.html?date=2000-12-25#summary")
 >>> uri.scheme
@@ -44,11 +47,12 @@ Query('date=2000-12-25')
 '/data/report.html?date=2000-12-25#summary'
 >>> uri.string
 'https://bob@example.com:8080/data/report.html?date=2000-12-25#summary'
-}}}
+```
 
-=== Authorities
+Authorities
+-----------
 
-{{{
+```python
 >>> from urimagic import Authority
 >>> auth = Authority("bob@example.com:8080")
 >>> auth.user_info
@@ -61,11 +65,12 @@ Query('date=2000-12-25')
 'example.com:8080'
 >>> auth.string
 'bob@example.com:8080'
-}}}
+```
 
-=== Paths
+Paths
+-----
 
-{{{
+```python
 >>> from urimagic import Path
 >>> Path("/foo/bar").segments
 ['', 'foo', 'bar']
@@ -75,11 +80,12 @@ Path('/foo/bar/')
 Path('/foo/bar')
 >>> Path("/foo/bar").string
 '/foo/bar'
-}}}
+```
 
-=== Queries
+Queries
+-------
 
-{{{
+```python
 >>> from urimagic import Query
 >>> query = Query("cake=nice&mushrooms=yuk")
 >>> query["cake"]
@@ -94,8 +100,10 @@ Path('/foo/bar')
 'Mulder=believer&Scully=sceptic'
 >>> Query.decode("Mulder=believer&Scully=sceptic")
 [('Mulder', 'believer'), ('Scully', 'sceptic')]
-}}}
+```
 
-== Resolving new URIs
+Resolving new URIs
+==================
 
-== URI Templates
+URI Templates
+=============
