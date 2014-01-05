@@ -1,13 +1,10 @@
 [![Build Status](https://travis-ci.org/nigelsmall/urimagic.png?branch=master)](https://travis-ci.org/nigelsmall/urimagic)
 
-========
-URIMagic
-========
+# URIMagic
 
 URIMagic is a Python library that provides full implementations of RFC 3986 URIs and RFC 6570 URI Templates.
 
-Percent Encoding & Decoding
-===========================
+## Percent Encoding & Decoding
 
 ```python
 >>> from urimagic import percent_encode, percent_decode
@@ -17,8 +14,7 @@ Percent Encoding & Decoding
 'Mulder & Scully'
 ```
 
-Parsing a URI
-=============
+## Parsing a URI
 
 ```python
 >>> from urimagic import URI
@@ -49,8 +45,7 @@ Query('date=2000-12-25')
 'https://bob@example.com:8080/data/report.html?date=2000-12-25#summary'
 ```
 
-Authorities
------------
+### Authorities
 
 ```python
 >>> from urimagic import Authority
@@ -67,8 +62,7 @@ Authorities
 'bob@example.com:8080'
 ```
 
-Paths
------
+### Paths
 
 ```python
 >>> from urimagic import Path
@@ -82,8 +76,7 @@ Path('/foo/bar')
 '/foo/bar'
 ```
 
-Queries
--------
+### Queries
 
 ```python
 >>> from urimagic import Query
@@ -102,8 +95,6 @@ Queries
 [('Mulder', 'believer'), ('Scully', 'sceptic')]
 ```
 
-Resolving new URIs
-==================
+## Resolving new URIs
 
-URI Templates
-=============
+## URI Templates
