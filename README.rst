@@ -1,4 +1,5 @@
-.. image:: https://travis-ci.org/nigelsmall/urimagic.png?branch=master   :target: https://travis-ci.org/nigelsmall/urimagic
+.. image:: https://travis-ci.org/nigelsmall/urimagic.png?branch=master
+   :target: https://travis-ci.org/nigelsmall/urimagic
 
 URIMagic
 ========
