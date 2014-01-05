@@ -28,6 +28,7 @@ setup(
     name="urimagic",
     version=__version__,
     description=__doc__,
+    long_description=open("README.rst").read(),
     author=__author__,
     author_email=__email__,
     url="http://nigelsmall.com/urimagic",
