@@ -143,6 +143,16 @@ class Authority(_Part):
         else:
             return cls(str(obj))
 
+    @classmethod
+    def _parse_host_port(cls, string):
+        if ":" in string:
+            host, port = string.rpartition(":")[0::2]
+            port = int(port)
+        else:
+            host = string
+            port = None
+        return host, port
+
     def __init__(self, string):
         super(Authority, self).__init__()
         if string is None:
@@ -155,12 +165,7 @@ class Authority(_Part):
                 self.__user_info = percent_decode(self.__user_info)
             else:
                 self.__user_info = None
-            if ":" in string:
-                self.__host, self.__port = string.rpartition(":")[0::2]
-                self.__port = int(self.__port)
-            else:
-                self.__host = string
-                self.__port = None
+            self.__host, self.__port = self._parse_host_port(string)
 
     def __eq__(self, other):
         other = self.__cast(other)
@@ -499,6 +504,74 @@ class URI(_Part):
     """
 
     @classmethod
+    def build(cls, **parts):
+        """ Build a URI object from named parts. The part names available are:
+
+        - string
+        - hierarchical_part
+        - absolute_path_reference
+        - authority
+        - host_port
+        - scheme
+        - user_info
+        - host
+        - port
+        - path
+        - query
+        - fragment
+
+        """
+        uri = URI(parts.get("string"))
+        uri.__set_hierarchical_part(parts.get("hierarchical_part"))
+        uri.__set_absolute_path_reference(parts.get("absolute_path_reference"))
+        uri.__set_authority(parts.get("authority"))
+        uri.__set_host_port(parts.get("host_port"))
+        uri.__set_scheme(parts.get("scheme"))
+        uri.__set_user_info(parts.get("user_info"))
+        uri.__set_host(parts.get("host"))
+        uri.__set_port(parts.get("port"))
+        uri.__set_path(parts.get("path"))
+        uri.__set_query(parts.get("query"))
+        uri.__set_fragment(parts.get("fragment"))
+        if parts and uri.__path is None:
+            uri.__path = Path("")
+        return uri
+
+    @classmethod
+    def _partition_fragment(cls, value):
+        if "#" in value:
+            value, fragment = value.partition("#")[0::2]
+            fragment = percent_decode(fragment)
+        else:
+            fragment = None
+        return value, fragment
+
+    @classmethod
+    def _partition_query(cls, value):
+        if "?" in value:
+            value, query = value.partition("?")[0::2]
+            query = Query(query)
+        else:
+            query = None
+        return value, query
+
+    @classmethod
+    def _parse_hierarchical_part(cls, value):
+        if value.startswith("//"):
+            value = value[2:]
+            slash = value.find("/")
+            if slash >= 0:
+                authority = Authority(value[:slash])
+                path = Path(value[slash:])
+            else:
+                authority = Authority(value)
+                path = Path("")
+        else:
+            authority = None
+            path = Path(value)
+        return authority, path
+
+    @classmethod
     def __cast(cls, obj):
         if obj is None:
             return cls(None)
@@ -537,30 +610,11 @@ class URI(_Part):
             else:
                 self.__scheme = None
             # fragment
-            if "#" in value:
-                value, self.__fragment = value.partition("#")[0::2]
-                self.__fragment = percent_decode(self.__fragment)
-            else:
-                self.__fragment = None
+            value, self.__fragment = self._partition_fragment(value)
             # query
-            if "?" in value:
-                value, self.__query = value.partition("?")[0::2]
-                self.__query = Query(self.__query)
-            else:
-                self.__query = None
+            value, self.__query = self._partition_query(value)
             # hierarchical part
-            if value.startswith("//"):
-                value = value[2:]
-                slash = value.find("/")
-                if slash >= 0:
-                    self.__authority = Authority(value[:slash])
-                    self.__path = Path(value[slash:])
-                else:
-                    self.__authority = Authority(value)
-                    self.__path = Path("")
-            else:
-                self.__authority = None
-                self.__path = Path(value)
+            self.__authority, self.__path = self._parse_hierarchical_part(value)
 
     def __eq__(self, other):
         other = self.__cast(other)
@@ -584,6 +638,64 @@ class URI(_Part):
     @property
     def __uri__(self):
         return self.string
+
+    def __set_hierarchical_part(self, string):
+        if string is not None:
+            self.__authority, self.__path = self._parse_hierarchical_part(string)
+
+    def __set_absolute_path_reference(self, string):
+        if string is not None:
+            string, self.__fragment = self._partition_fragment(string)
+            string, self.__query = self._partition_query(string)
+            self.__path = Path(string)
+
+    def __set_authority(self, string):
+        if string is not None:
+            self.__authority = Authority(string)
+
+    def __set_host_port(self, string):
+        if string is not None:
+            if self.__authority is None:
+                self.__authority = Authority(string)
+            else:
+                host, port = Authority._parse_host_port(string)
+                self.__authority._Authority__host = host
+                self.__authority._Authority__port = port
+
+    def __set_scheme(self, string):
+        if string is not None:
+            self.__scheme = string
+
+    def __set_user_info(self, string):
+        if string is not None:
+            if self.__authority is None:
+                self.__authority = Authority("")
+            self.__authority._Authority__user_info = string
+
+    def __set_host(self, string):
+        if string is not None:
+            if self.__authority is None:
+                self.__authority = Authority(string)
+            else:
+                self.__authority._Authority__host = string
+
+    def __set_port(self, number):
+        if number is not None:
+            if self.__authority is None:
+                self.__authority = Authority("")
+            self.__authority._Authority__port = number
+
+    def __set_path(self, string):
+        if string is not None:
+            self.__path = Path(string)
+
+    def __set_query(self, string):
+        if string is not None:
+            self.__query = Query(string)
+
+    def __set_fragment(self, string):
+        if string is not None:
+            self.__fragment = string
 
     @property
     def string(self):

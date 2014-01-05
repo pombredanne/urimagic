@@ -71,6 +71,7 @@ def test_can_parse_empty_string_uri():
     assert uri.host_port is None
     assert uri.absolute_path_reference == ""
 
+
 def test_can_parse_absolute_path_uri():
     uri = URI("/foo/bar")
     assert str(uri) == "/foo/bar"
@@ -198,7 +199,7 @@ def test_can_parse_full_uri():
         "foo://bob%40somewhere@example.com:8042/over/there?name=ferret#nose"
     assert len(uri) == (len("foo://bob%40somewhere@example.com:8042"
                             "/over/there?name=ferret#nose"))
-    assert bool(uri) == True
+    assert bool(uri)
     assert URI(uri) == \
         "foo://bob%40somewhere@example.com:8042/over/there?name=ferret#nose"
     assert uri.string == \
@@ -371,3 +372,282 @@ def test_resolving_when_reference_is_none_returns_none():
     base = URI("http://example.com")
     uri = base.resolve(None)
     assert uri is None
+
+
+def test_can_build_none_uri():
+    uri = URI.build()
+    assert str(uri) == ""
+    assert uri.string is None
+    assert uri.scheme is None
+    assert uri.hierarchical_part is None
+    assert uri.query is None
+    assert uri.fragment is None
+    assert uri.authority is None
+    assert uri.path is None
+    assert uri.user_info is None
+    assert uri.host is None
+    assert uri.port is None
+    assert uri.host_port is None
+    assert uri.absolute_path_reference is None
+
+
+def test_can_build_uri_from_string():
+    uri = URI.build(string="foo://example.com/")
+    assert str(uri) == "foo://example.com/"
+    assert uri.string == "foo://example.com/"
+    assert uri.scheme == "foo"
+    assert uri.hierarchical_part == "//example.com/"
+    assert uri.query is None
+    assert uri.fragment is None
+    assert uri.authority == "example.com"
+    assert uri.path == "/"
+    assert uri.user_info is None
+    assert uri.host == "example.com"
+    assert uri.port is None
+    assert uri.host_port == "example.com"
+    assert uri.absolute_path_reference == "/"
+
+
+def test_can_build_uri_from_hierarchical_part():
+    uri = URI.build(hierarchical_part="//example.com/")
+    assert str(uri) == "//example.com/"
+    assert uri.string == "//example.com/"
+    assert uri.scheme is None
+    assert uri.hierarchical_part == "//example.com/"
+    assert uri.query is None
+    assert uri.fragment is None
+    assert uri.authority == "example.com"
+    assert uri.path == "/"
+    assert uri.user_info is None
+    assert uri.host == "example.com"
+    assert uri.port is None
+    assert uri.host_port == "example.com"
+    assert uri.absolute_path_reference == "/"
+
+
+def test_can_build_uri_from_scheme_and_hierarchical_part():
+    uri = URI.build(scheme="foo", hierarchical_part="//example.com/")
+    assert str(uri) == "foo://example.com/"
+    assert uri.string == "foo://example.com/"
+    assert uri.scheme == "foo"
+    assert uri.hierarchical_part == "//example.com/"
+    assert uri.query is None
+    assert uri.fragment is None
+    assert uri.authority == "example.com"
+    assert uri.path == "/"
+    assert uri.user_info is None
+    assert uri.host == "example.com"
+    assert uri.port is None
+    assert uri.host_port == "example.com"
+    assert uri.absolute_path_reference == "/"
+
+
+def test_can_build_uri_from_scheme_hierarchical_part_and_query():
+    uri = URI.build(scheme="foo", hierarchical_part="//example.com/",
+                    query="spam=eggs")
+    assert str(uri) == "foo://example.com/?spam=eggs"
+    assert uri.string == "foo://example.com/?spam=eggs"
+    assert uri.scheme == "foo"
+    assert uri.hierarchical_part == "//example.com/"
+    assert uri.query == "spam=eggs"
+    assert uri.fragment is None
+    assert uri.authority == "example.com"
+    assert uri.path == "/"
+    assert uri.user_info is None
+    assert uri.host == "example.com"
+    assert uri.port is None
+    assert uri.host_port == "example.com"
+    assert uri.absolute_path_reference == "/?spam=eggs"
+
+
+def test_can_build_uri_from_scheme_hierarchical_part_query_and_fragment():
+    uri = URI.build(scheme="foo", hierarchical_part="//example.com/",
+                    query="spam=eggs", fragment="mustard")
+    assert str(uri) == "foo://example.com/?spam=eggs#mustard"
+    assert uri.string == "foo://example.com/?spam=eggs#mustard"
+    assert uri.scheme == "foo"
+    assert uri.hierarchical_part == "//example.com/"
+    assert uri.query == "spam=eggs"
+    assert uri.fragment == "mustard"
+    assert uri.authority == "example.com"
+    assert uri.path == "/"
+    assert uri.user_info is None
+    assert uri.host == "example.com"
+    assert uri.port is None
+    assert uri.host_port == "example.com"
+    assert uri.absolute_path_reference == "/?spam=eggs#mustard"
+
+
+def test_can_build_uri_from_absolute_path_reference():
+    uri = URI.build(absolute_path_reference="/foo/bar?spam=eggs#mustard")
+    assert str(uri) == "/foo/bar?spam=eggs#mustard"
+    assert uri.string == "/foo/bar?spam=eggs#mustard"
+    assert uri.scheme is None
+    assert uri.hierarchical_part == "/foo/bar"
+    assert uri.query == "spam=eggs"
+    assert uri.fragment == "mustard"
+    assert uri.authority is None
+    assert uri.path == "/foo/bar"
+    assert uri.user_info is None
+    assert uri.host is None
+    assert uri.port is None
+    assert uri.host_port is None
+    assert uri.absolute_path_reference == "/foo/bar?spam=eggs#mustard"
+
+
+def test_can_build_uri_from_authority_and_absolute_path_reference():
+    uri = URI.build(authority="bob@example.com:9999",
+                    absolute_path_reference="/foo/bar?spam=eggs#mustard")
+    assert str(uri) == "//bob@example.com:9999/foo/bar?spam=eggs#mustard"
+    assert uri.string == "//bob@example.com:9999/foo/bar?spam=eggs#mustard"
+    assert uri.scheme is None
+    assert uri.hierarchical_part == "//bob@example.com:9999/foo/bar"
+    assert uri.query == "spam=eggs"
+    assert uri.fragment == "mustard"
+    assert uri.authority == "bob@example.com:9999"
+    assert uri.path == "/foo/bar"
+    assert uri.user_info == "bob"
+    assert uri.host == "example.com"
+    assert uri.port == 9999
+    assert uri.host_port == "example.com:9999"
+    assert uri.absolute_path_reference == "/foo/bar?spam=eggs#mustard"
+
+
+def test_can_build_uri_from_scheme_host_and_path():
+    uri = URI.build(scheme="http", host="example.com", path="/foo/bar")
+    assert str(uri) == "http://example.com/foo/bar"
+    assert uri.string == "http://example.com/foo/bar"
+    assert uri.scheme == "http"
+    assert uri.hierarchical_part == "//example.com/foo/bar"
+    assert uri.query is None
+    assert uri.fragment is None
+    assert uri.authority == "example.com"
+    assert uri.path == "/foo/bar"
+    assert uri.user_info is None
+    assert uri.host == "example.com"
+    assert uri.port is None
+    assert uri.host_port == "example.com"
+    assert uri.absolute_path_reference == "/foo/bar"
+
+
+def test_can_build_uri_from_scheme_and_host_port():
+    uri = URI.build(scheme="http", host_port="example.com:3456")
+    assert str(uri) == "http://example.com:3456"
+    assert uri.string == "http://example.com:3456"
+    assert uri.scheme == "http"
+    assert uri.hierarchical_part == "//example.com:3456"
+    assert uri.query is None
+    assert uri.fragment is None
+    assert uri.authority == "example.com:3456"
+    assert uri.path == ""
+    assert uri.user_info is None
+    assert uri.host == "example.com"
+    assert uri.port == 3456
+    assert uri.host_port == "example.com:3456"
+    assert uri.absolute_path_reference == ""
+
+
+def test_can_build_uri_from_scheme_authority_and_host_port():
+    uri = URI.build(scheme="http", authority="bob@example.net:4567",
+                    host_port="example.com:3456")
+    assert str(uri) == "http://bob@example.com:3456"
+    assert uri.string == "http://bob@example.com:3456"
+    assert uri.scheme == "http"
+    assert uri.hierarchical_part == "//bob@example.com:3456"
+    assert uri.query is None
+    assert uri.fragment is None
+    assert uri.authority == "bob@example.com:3456"
+    assert uri.path == ""
+    assert uri.user_info == "bob"
+    assert uri.host == "example.com"
+    assert uri.port == 3456
+    assert uri.host_port == "example.com:3456"
+    assert uri.absolute_path_reference == ""
+
+
+def test_can_build_uri_from_scheme_user_info_and_host_port():
+    uri = URI.build(scheme="http", user_info="bob",
+                    host_port="example.com:3456")
+    assert str(uri) == "http://bob@example.com:3456"
+    assert uri.string == "http://bob@example.com:3456"
+    assert uri.scheme == "http"
+    assert uri.hierarchical_part == "//bob@example.com:3456"
+    assert uri.query is None
+    assert uri.fragment is None
+    assert uri.authority == "bob@example.com:3456"
+    assert uri.path == ""
+    assert uri.user_info == "bob"
+    assert uri.host == "example.com"
+    assert uri.port == 3456
+    assert uri.host_port == "example.com:3456"
+    assert uri.absolute_path_reference == ""
+
+
+def test_can_build_uri_from_scheme_user_info_and_path():
+    uri = URI.build(scheme="http", user_info="bob", path="/foo")
+    assert str(uri) == "http://bob@/foo"
+    assert uri.string == "http://bob@/foo"
+    assert uri.scheme == "http"
+    assert uri.hierarchical_part == "//bob@/foo"
+    assert uri.query is None
+    assert uri.fragment is None
+    assert uri.authority == "bob@"
+    assert uri.path == "/foo"
+    assert uri.user_info == "bob"
+    assert uri.host == ""
+    assert uri.port is None
+    assert uri.host_port == ""
+    assert uri.absolute_path_reference == "/foo"
+
+
+def test_can_build_uri_from_scheme_authority_and_host():
+    uri = URI.build(scheme="http", authority="bob@example.net",
+                    host="example.com")
+    assert str(uri) == "http://bob@example.com"
+    assert uri.string == "http://bob@example.com"
+    assert uri.scheme == "http"
+    assert uri.hierarchical_part == "//bob@example.com"
+    assert uri.query is None
+    assert uri.fragment is None
+    assert uri.authority == "bob@example.com"
+    assert uri.path == ""
+    assert uri.user_info == "bob"
+    assert uri.host == "example.com"
+    assert uri.port is None
+    assert uri.host_port == "example.com"
+    assert uri.absolute_path_reference == ""
+
+
+def test_can_build_uri_from_scheme_authority_and_port():
+    uri = URI.build(scheme="http", authority="bob@example.com",
+                    port=3456)
+    assert str(uri) == "http://bob@example.com:3456"
+    assert uri.string == "http://bob@example.com:3456"
+    assert uri.scheme == "http"
+    assert uri.hierarchical_part == "//bob@example.com:3456"
+    assert uri.query is None
+    assert uri.fragment is None
+    assert uri.authority == "bob@example.com:3456"
+    assert uri.path == ""
+    assert uri.user_info == "bob"
+    assert uri.host == "example.com"
+    assert uri.port == 3456
+    assert uri.host_port == "example.com:3456"
+    assert uri.absolute_path_reference == ""
+
+
+def test_can_build_uri_from_scheme_port_and_path():
+    uri = URI.build(scheme="http", port=3456, path="/foo")
+    assert str(uri) == "http://:3456/foo"
+    assert uri.string == "http://:3456/foo"
+    assert uri.scheme == "http"
+    assert uri.hierarchical_part == "//:3456/foo"
+    assert uri.query is None
+    assert uri.fragment is None
+    assert uri.authority == ":3456"
+    assert uri.path == "/foo"
+    assert uri.user_info is None
+    assert uri.host == ""
+    assert uri.port == 3456
+    assert uri.host_port == ":3456"
+    assert uri.absolute_path_reference == "/foo"
