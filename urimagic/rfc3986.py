@@ -18,6 +18,8 @@
 
 """
 An implementation of URIs from RFC 3986 (URI Generic Syntax).
+
+See: http://www.ietf.org/rfc/rfc3986.txt
 """
 
 
@@ -42,6 +44,7 @@ unreserved = ("ABCDEFGHIJKLMNOPQRSTUVWXYZ"
               "0123456789-._~")
 
 
+# RFC 3986 § 2.1.
 def percent_encode(data, safe=None):
     """ Percent encode a string of data, optionally keeping certain characters
     unencoded.
