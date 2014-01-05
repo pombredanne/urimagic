@@ -9,7 +9,7 @@ URIMagic is a Python library that provides full implementations of RFC
 Percent Encoding & Decoding
 ---------------------------
 
-::
+.. code-block:: python
 
     >>> from urimagic import percent_encode, percent_decode
     >>> percent_encode("Mulder & Scully")
@@ -20,7 +20,7 @@ Percent Encoding & Decoding
 Parsing a URI
 -------------
 
-::
+.. code-block:: python
 
     >>> from urimagic import URI
     >>> uri = URI("https://bob@example.com:8080/data/report.html?date=2000-12-25#summary")
@@ -52,7 +52,7 @@ Parsing a URI
 Authorities
 ~~~~~~~~~~~
 
-::
+.. code-block:: python
 
     >>> from urimagic import Authority
     >>> auth = Authority("bob@example.com:8080")
@@ -70,7 +70,7 @@ Authorities
 Paths
 ~~~~~
 
-::
+.. code-block:: python
 
     >>> from urimagic import Path
     >>> Path("/foo/bar").segments
@@ -85,7 +85,7 @@ Paths
 Queries
 ~~~~~~~
 
-::
+.. code-block:: python
 
     >>> from urimagic import Query
     >>> query = Query("cake=nice&mushrooms=yuk")
