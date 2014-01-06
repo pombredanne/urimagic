@@ -91,7 +91,7 @@ class URITemplate(_Part):
         def _expand(self, expression, safe=None, prefix="", separator=",",
                     with_keys=False, trim_empty_equals=False):
             items = self.collect(*expression.split(","))
-            encode = lambda x: percent_encode(x, safe)
+            encode = lambda x: percent_encode(x, safe=safe)
             for i, (key, value) in enumerate(items):
                 if isinstance(value, tuple):
                     items[i] = "=".join(map(encode, value))

@@ -54,12 +54,12 @@ def percent_encode(data, safe=None):
         return None
     if isinstance(data, (tuple, list, set)):
         return "&".join(
-            percent_encode(value, safe)
+            percent_encode(value, safe=safe)
             for value in data
         )
     if isinstance(data, dict):
         return "&".join(
-            key + "=" + percent_encode(value, safe)
+            key + "=" + percent_encode(value, safe=safe)
             for key, value in data.items()
         )
     if not safe:

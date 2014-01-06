@@ -62,5 +62,10 @@ def test_can_percent_encode_reserved_chars():
 
 
 def test_can_percent_encode_extended_chars():
-    encoded = percent_encode("El Niño")
-    assert encoded == "El%20Ni%C3%B1o"
+    encoded = percent_encode("/El Niño/")
+    assert encoded == "%2FEl%20Ni%C3%B1o%2F"
+
+
+def test_can_percent_encode_with_safe_chars():
+    encoded = percent_encode("/El Niño/", safe="/|\\")
+    assert encoded == "/El%20Ni%C3%B1o/"
