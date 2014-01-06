@@ -27,6 +27,8 @@ from __future__ import unicode_literals
 
 import re
 
+from .util import ustr
+
 
 __all__ = ["general_delimiters", "subcomponent_delimiters",
            "reserved", "unreserved", "percent_encode", "percent_decode",
@@ -67,7 +69,7 @@ def percent_encode(data, safe=None):
     try:
         chars = list(data)
     except TypeError:
-        chars = list(str(data))
+        chars = list(ustr(data))
     for i, char in enumerate(chars):
         if char == "%" or (char not in unreserved and char not in safe):
             chars[i] = "".join("%" + hex(b)[2:].upper().zfill(2)
@@ -85,7 +87,7 @@ def percent_decode(data):
     try:
         bits = percent_code.split(data)
     except TypeError:
-        bits = percent_code.split(str(data))
+        bits = percent_code.split(ustr(data))
     out = bytearray()
     for bit in bits:
         if bit.startswith("%"):
@@ -117,7 +119,7 @@ class _Part(object):
         return bool(self.string)
 
     def __len__(self):
-        return len(str(self))
+        return len(ustr(self))
 
     def __iter__(self):
         return iter(self.string)
@@ -146,7 +148,7 @@ class Authority(_Part):
         elif isinstance(obj, cls):
             return obj
         else:
-            return cls(str(obj))
+            return cls(ustr(obj))
 
     @classmethod
     def _parse_host_port(cls, string):
@@ -235,7 +237,7 @@ class Authority(_Part):
         """
         u = [self.__host]
         if self.__port is not None:
-            u += [":", str(self.__port)]
+            u += [":", ustr(self.__port)]
         return "".join(u)
 
     @property
@@ -291,7 +293,7 @@ class Authority(_Part):
             u += [percent_encode(self.__user_info), "@"]
         u += [self.__host]
         if self.__port is not None:
-            u += [":", str(self.__port)]
+            u += [":", ustr(self.__port)]
         return "".join(u)
         
     @property
@@ -328,7 +330,7 @@ class Path(_Part):
         elif isinstance(obj, cls):
             return obj
         else:
-            return cls(str(obj))
+            return cls(ustr(obj))
 
     def __init__(self, string):
         super(Path, self).__init__()
@@ -423,7 +425,7 @@ class Query(_Part):
         elif isinstance(obj, cls):
             return obj
         else:
-            return cls(str(obj))
+            return cls(ustr(obj))
 
     @classmethod
     def encode(cls, iterable):
@@ -583,7 +585,7 @@ class URI(_Part):
         elif isinstance(obj, cls):
             return obj
         else:
-            return cls(str(obj))
+            return cls(ustr(obj))
 
     def __init__(self, value):
         super(URI, self).__init__()
@@ -605,9 +607,9 @@ class URI(_Part):
             self.__fragment = None
         else:
             try:
-                value = str(value.__uri__)
+                value = ustr(value.__uri__)
             except AttributeError:
-                value = str(value)
+                value = ustr(value)
             # scheme
             if ":" in value:
                 self.__scheme, value = value.partition(":")[0::2]
@@ -741,10 +743,10 @@ class URI(_Part):
         if self.__scheme is not None:
             u += [percent_encode(self.__scheme), ":"]
         if self.__authority is not None:
-            u += ["//", str(self.__authority)]
-        u += [str(self.__path)]
+            u += ["//", ustr(self.__authority)]
+        u += [ustr(self.__path)]
         if self.__query is not None:
-            u += ["?", str(self.__query)]
+            u += ["?", ustr(self.__query)]
         if self.__fragment is not None:
             u += ["#", percent_encode(self.__fragment)]
         return "".join(u)
@@ -972,8 +974,8 @@ class URI(_Part):
             return None
         u = []
         if self.__authority is not None:
-            u += ["//", str(self.__authority)]
-        u += [str(self.__path)]
+            u += ["//", ustr(self.__authority)]
+        u += [ustr(self.__path)]
         return "".join(u)
 
     @property
@@ -995,20 +997,20 @@ class URI(_Part):
         """
         if self.__path is None:
             return None
-        u = [str(self.__path)]
+        u = [ustr(self.__path)]
         if self.__query is not None:
-            u += ["?", str(self.__query)]
+            u += ["?", ustr(self.__query)]
         if self.__fragment is not None:
             u += ["#", percent_encode(self.__fragment)]
         return "".join(u)
 
     def _merge_path(self, relative_path_reference):
         if self.__authority is not None and not self.__path:
-            return Path("/" + str(relative_path_reference))
+            return Path("/" + ustr(relative_path_reference))
         elif "/" in self.__path.string:
             segments = self.__path.segments
             segments[-1] = ""
-            return Path("/".join(segments) + str(relative_path_reference))
+            return Path("/".join(segments) + ustr(relative_path_reference))
         else:
             return relative_path_reference
 
@@ -1047,7 +1049,7 @@ class URI(_Part):
                     else:
                         target.__query = self.__query
                 else:
-                    if str(reference.__path).startswith("/"):
+                    if ustr(reference.__path).startswith("/"):
                         target.__path = reference.__path.remove_dot_segments()
                     else:
                         target.__path = self._merge_path(reference.__path)

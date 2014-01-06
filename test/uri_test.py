@@ -19,6 +19,7 @@
 from __future__ import unicode_literals, print_function
 
 from urimagic import URI
+from urimagic.util import ustr
 
 
 def test_can_parse_none_uri():
@@ -173,6 +174,23 @@ def test_can_parse_simple_uri():
     assert uri.port is None
     assert uri.host_port == "example.com"
     assert uri.absolute_path_reference == ""
+
+
+def test_can_parse_uri_with_extended_chars():
+    uri = URI("foo://éxamplə.çôm/foo")
+    assert ustr(uri) == "foo://éxamplə.çôm/foo"
+    assert uri.string == "foo://éxamplə.çôm/foo"
+    assert uri.scheme == "foo"
+    assert uri.hierarchical_part == "//éxamplə.çôm/foo"
+    assert uri.query is None
+    assert uri.fragment is None
+    assert uri.authority == "éxamplə.çôm"
+    assert uri.path == "/foo"
+    assert uri.user_info is None
+    assert uri.host == "éxamplə.çôm"
+    assert uri.port is None
+    assert uri.host_port == "éxamplə.çôm"
+    assert uri.absolute_path_reference == "/foo"
 
 
 def test_can_parse_uri_with_root_path():
