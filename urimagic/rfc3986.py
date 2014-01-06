@@ -81,7 +81,7 @@ def percent_decode(data):
     """
     if data is None:
         return None
-    percent_code = re.compile("(%[0-9A-Fa-f]{2})")
+    percent_code = re.compile(r"(%[0-9A-Fa-f]{2}|\+)")
     try:
         bits = percent_code.split(data)
     except TypeError:
@@ -90,6 +90,8 @@ def percent_decode(data):
     for bit in bits:
         if bit.startswith("%"):
             out.extend(bytearray([int(bit[1:], 16)]))
+        elif bit == "+":
+            out.append(32)
         else:
             out.extend(bytearray(bit, "utf-8"))
     return out.decode("utf-8")

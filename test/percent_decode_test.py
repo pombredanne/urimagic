@@ -41,6 +41,11 @@ def test_can_percent_decode_string():
     assert decoded == "foo"
 
 
+def test_can_percent_decode_plus_to_space():
+    decoded = percent_decode("one+two%20three+four")
+    assert decoded == "one two three four"
+
+
 def test_can_percent_decode_reserved_chars():
     decoded = percent_decode("20%25%20of%20%24100%20%3D%20%2420")
     assert decoded == "20% of $100 = $20"
