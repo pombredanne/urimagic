@@ -18,11 +18,11 @@
 
 from __future__ import unicode_literals
 
-from urimagic.rfc3986 import _Part
+from urimagic.rfc3986 import Part
 
 
 def test_part_string_not_implemented():
-    part = _Part()
+    part = Part()
     try:
         part.string()
     except NotImplementedError:

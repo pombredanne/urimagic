@@ -31,12 +31,9 @@ def test_can_parse_none_query():
     assert str(query) == ""
     assert query.string is None
     assert dict(query) == {}
-    try:
-        assert query["bacon"] == "yummy"
-    except KeyError:
-        assert True
-    else:
-        assert False
+    assert len(query) == 0
+    assert not query.__bool__()
+    assert not query.__nonzero__()
 
 
 def test_can_parse_empty_query():
@@ -44,12 +41,9 @@ def test_can_parse_empty_query():
     assert str(query) == ""
     assert query.string == ""
     assert dict(query) == {}
-    try:
-        assert query["bacon"] == "yummy"
-    except KeyError:
-        assert True
-    else:
-        assert False
+    assert len(query) == 0
+    assert not query.__bool__()
+    assert not query.__nonzero__()
 
 
 def test_can_parse_key_only_query():
@@ -57,7 +51,10 @@ def test_can_parse_key_only_query():
     assert str(query) == "foo"
     assert query.string == "foo"
     assert dict(query) == {"foo": None}
-    assert query["foo"] is None
+    assert query.get("foo") is None
+    assert len(query) == 1
+    assert query.__bool__()
+    assert query.__nonzero__()
 
 
 def test_can_parse_key_value_query():
@@ -65,7 +62,10 @@ def test_can_parse_key_value_query():
     assert str(query) == "foo=bar"
     assert query.string == "foo=bar"
     assert dict(query) == {"foo": "bar"}
-    assert query["foo"] == "bar"
+    assert query.get("foo") == "bar"
+    assert len(query) == 1
+    assert query.__bool__()
+    assert query.__nonzero__()
 
 
 def test_can_parse_multi_key_value_query():
@@ -73,8 +73,8 @@ def test_can_parse_multi_key_value_query():
     assert str(query) == "foo=bar&spam=eggs"
     assert query.string == "foo=bar&spam=eggs"
     assert dict(query) == {"foo": "bar", "spam": "eggs"}
-    assert query["foo"] == "bar"
-    assert query["spam"] == "eggs"
+    assert query.get("foo") == "bar"
+    assert query.get("spam") == "eggs"
 
 
 def test_can_parse_mixed_query():
@@ -82,26 +82,8 @@ def test_can_parse_mixed_query():
     assert str(query) == "foo&spam=eggs"
     assert query.string == "foo&spam=eggs"
     assert dict(query) == {"foo": None, "spam": "eggs"}
-    assert query["foo"] is None
-    assert query["spam"] == "eggs"
-    try:
-        assert query["bacon"] == "yummy"
-    except KeyError:
-        assert True
-    else:
-        assert False
-
-
-def test_can_query_encode_dict():
-    data = OrderedDict([("foo", "bar"), ("baz", None), ("big number", 712)])
-    encoded = Query.encode(data)
-    assert encoded == "foo=bar&baz&big%20number=712"
-
-
-def test_can_query_encode_list():
-    data = ["red", "orange", "yellow", "green", 97, False]
-    encoded = Query.encode(data)
-    assert encoded == "red&orange&yellow&green&97&False"
+    assert query.get("foo") is None
+    assert query.get("spam") == "eggs"
 
 
 def test_query_equality():
@@ -126,3 +108,60 @@ def test_query_is_hashable():
     query = Query("foo=bar&spam=eggs")
     hashed = hash(query)
     assert hashed
+
+
+def test_getting_non_existent_query_parameters_causes_key_error():
+    query = Query("foo=bar&spam=eggs")
+    try:
+        query.get("bacon")
+    except KeyError:
+        assert True
+    else:
+        assert False
+
+
+def test_getting_all_non_existent_query_parameters_causes_key_error():
+    query = Query("foo=bar&spam=eggs")
+    try:
+        query.get_all("bacon")
+    except KeyError:
+        assert True
+    else:
+        assert False
+
+
+def test_can_get_nth_parameter():
+    query = Query("foo=bar&foo=baz&foo=qux&spam=eggs")
+    assert query.get("foo", 0) == "bar"
+    assert query.get("foo", 1) == "baz"
+    assert query.get("foo", 2) == "qux"
+    try:
+        query.get("foo", 3)
+    except IndexError:
+        assert True
+    else:
+        assert False
+
+
+def test_can_get_all_parameters_with_name():
+    query = Query("foo=bar&foo=baz&foo=qux&spam=eggs")
+    values = query.get_all("foo")
+    assert values == ["bar", "baz", "qux"]
+
+
+def test_can_get_query_item():
+    query = Query("one=eins&two=zwei&three=drei&four=vier&five=fünf")
+    bit = query[2]
+    assert bit == ("three", "drei")
+
+
+def test_can_get_query_slice():
+    query = Query("one=eins&two=zwei&three=drei&four=vier&five=fünf")
+    bits = query[1:3]
+    assert bits.string == "two=zwei&three=drei"
+
+
+def test_can_check_parameter_exists():
+    query = Query("one=eins&two=zwei&three=drei&four=vier&five=fünf")
+    assert ("two", "zwei") in query
+    assert ("nine", "neun") not in query

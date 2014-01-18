@@ -27,6 +27,7 @@ from __future__ import unicode_literals
 
 import re
 
+from .kvlist import KeyValueList
 from .util import ustr
 
 
@@ -99,7 +100,7 @@ def percent_decode(data):
     return out.decode("utf-8")
 
 
-class _Part(object):
+class Part(object):
     """ Internal base class for all URI component parts.
     """
 
@@ -111,6 +112,9 @@ class _Part(object):
 
     def __str__(self):
         return self.string or ""
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __bool__(self):
         return bool(self.string)
@@ -129,7 +133,95 @@ class _Part(object):
         raise NotImplementedError()
 
 
-class Authority(_Part):
+class FrozenParameterList(Part):
+
+    @classmethod
+    def __cast(cls, obj):
+        if obj is None:
+            return cls(None)
+        elif isinstance(obj, cls):
+            return obj
+        else:
+            return cls(ustr(obj))
+
+    def __init__(self, string, separator):
+        super(FrozenParameterList, self).__init__()
+        self.__separator = separator
+        self.__none = string is None
+        self.__parameters = KeyValueList()
+        if string:
+            bits = string.split(self.__separator)
+            for bit in bits:
+                if "=" in bit:
+                    key, value = map(percent_decode,
+                                     bit.partition("=")[0::2])
+                else:
+                    key, value = percent_decode(bit), None
+                self.__parameters.append(key, value)
+
+    def __eq__(self, other):
+        other = self.__cast(other)
+        return (self.__parameters == other.__parameters and
+                self.__separator == other.__separator)
+
+    def __len__(self):
+        return self.__parameters.__len__()
+
+    def __bool__(self):
+        return bool(self.__parameters)
+
+    def __nonzero__(self):
+        return bool(self.__parameters)
+
+    def __contains__(self, item):
+        return self.__parameters.__contains__(item)
+
+    def __hash__(self):
+        return hash(self.string)
+
+    def __iter__(self):
+        return self.__parameters.__iter__()
+
+    def __getitem__(self, index):
+        if isinstance(index, slice):
+            out = FrozenParameterList("", self.__separator)
+            out.__parameters.extend(self.__parameters.__getitem__(index))
+            return out
+        else:
+            return self.__parameters.__getitem__(index)
+
+    def __getslice__(self, start, stop):
+        out = FrozenParameterList("", self.__separator)
+        out.__parameters.extend(self.__parameters.__getslice__(start, stop))
+        return out
+
+    def get(self, name, index=0):
+        if not self.__parameters.has_key(name):
+            raise KeyError(name)
+        for i, value in enumerate(self.__parameters.get(name)):
+            if i == index:
+                return value
+        raise IndexError("Parameter {0} does not have {1} values".format(name, index))
+
+    def get_all(self, name):
+        if not self.__parameters.has_key(name):
+            raise KeyError(name)
+        return list(self.__parameters.get(name))
+
+    @property
+    def string(self):
+        if self.__none:
+            return None
+        bits = []
+        for key, value in self.__parameters:
+            if value is None:
+                bits.append(percent_encode(key))
+            else:
+                bits.append(percent_encode(key) + "=" + percent_encode(value))
+        return self.__separator.join(bits)
+
+
+class Authority(Part):
     """ A host name plus optional port and user information detail.
 
     **Syntax**
@@ -321,7 +413,7 @@ class Authority(_Part):
         return self.__user_info
 
 
-class Path(_Part):
+class Path(Part):
 
     @classmethod
     def __cast(cls, obj):
@@ -416,92 +508,13 @@ class Path(_Part):
             return self
 
 
-class Query(_Part):
-
-    @classmethod
-    def __cast(cls, obj):
-        if obj is None:
-            return cls(None)
-        elif isinstance(obj, cls):
-            return obj
-        else:
-            return cls(ustr(obj))
-
-    @classmethod
-    def encode(cls, iterable):
-        if iterable is None:
-            return None
-        bits = []
-        if isinstance(iterable, dict):
-            for key, value in iterable.items():
-                if value is None:
-                    bits.append(percent_encode(key))
-                else:
-                    bits.append(percent_encode(key) + "=" + percent_encode(value))
-        else:
-            for item in iterable:
-                if isinstance(item, tuple) and len(item) == 2:
-                    key, value = item
-                    if value is None:
-                        bits.append(percent_encode(key))
-                    else:
-                        bits.append(percent_encode(key) + "=" + percent_encode(value))
-                else:
-                    bits.append(percent_encode(item))
-        return "&".join(bits)
-
-    @classmethod
-    def decode(cls, string):
-        if string is None:
-            return None
-        data = []
-        if string:
-            bits = string.split("&")
-            for bit in bits:
-                if "=" in bit:
-                    key, value = map(percent_decode, bit.partition("=")[0::2])
-                else:
-                    key, value = percent_decode(bit), None
-                data.append((key, value))
-        return data
+class Query(FrozenParameterList):
 
     def __init__(self, string):
-        super(Query, self).__init__()
-        self.__query = Query.decode(string)
-        if self.__query is None:
-            self.__query_dict = None
-        else:
-            self.__query_dict = dict(self.__query)
-
-    def __eq__(self, other):
-        other = self.__cast(other)
-        return self.__query == other.__query
-
-    def __ne__(self, other):
-        other = self.__cast(other)
-        return self.__query != other.__query
-
-    def __hash__(self):
-        return hash(self.string)
-
-    @property
-    def string(self):
-        return Query.encode(self.__query)
-
-    def __iter__(self):
-        if self.__query is None:
-            return iter(())
-        else:
-            return iter(self.__query)
-
-    def __getitem__(self, key):
-        if self.__query_dict is None:
-            raise KeyError(key)
-        else:
-            return self.__query_dict[key]
+        super(Query, self).__init__(string, "&")
 
 
-class URI(_Part):
+class URI(Part):
     """ Uniform Resource Identifier.
 
     .. seealso::

@@ -227,7 +227,7 @@ def test_can_parse_full_uri():
         "//bob%40somewhere@example.com:8042/over/there"
     assert uri.query == "name=ferret"
     assert dict(uri.query) == {"name": "ferret"}
-    assert uri.query["name"] == "ferret"
+    assert uri.query.get("name") == "ferret"
     assert uri.fragment == "nose"
     assert uri.authority == "bob%40somewhere@example.com:8042"
     assert uri.path == "/over/there"

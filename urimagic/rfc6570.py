@@ -25,13 +25,13 @@ from __future__ import unicode_literals
 
 import re
 
-from .rfc3986 import reserved, percent_encode, _Part, URI
+from .rfc3986 import reserved, percent_encode, Part, URI
 
 
 __all__ = ["URITemplate"]
 
 
-class URITemplate(_Part):
+class URITemplate(Part):
     """A URI Template is a compact sequence of characters for describing a
     range of Uniform Resource Identifiers through variable expansion.
 
