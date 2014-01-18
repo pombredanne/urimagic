@@ -82,7 +82,10 @@ class KeyValueList(list):
         KeyValueList([('blue', 'sea'), ('green', 'grass')])
 
         """
-        return KeyValueList(list.__getslice__(self, start, end))
+        try:
+            return KeyValueList(list.__getslice__(self, start, end))
+        except AttributeError:
+            return KeyValueList(list.__getitem__(self, slice(start, end)))
 
     def __setitem__(self, index, item):
         """ Set a single item.

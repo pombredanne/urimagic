@@ -33,7 +33,7 @@ from .util import ustr
 
 __all__ = ["general_delimiters", "subcomponent_delimiters",
            "reserved", "unreserved", "percent_encode", "percent_decode",
-           "Authority", "Path", "Query", "URI"]
+           "Authority", "Path", "PathSegment", "Query", "URI"]
 
 
 # RFC 3986 § 2.2.
@@ -410,6 +410,41 @@ class Authority(Part):
         return self.__user_info
 
 
+class PathSegment(Part):
+
+    @classmethod
+    def __cast(cls, obj):
+        if obj is None:
+            return cls(None)
+        elif isinstance(obj, cls):
+            return obj
+        else:
+            return cls(ustr(obj))
+
+    def __init__(self, string):
+        super(PathSegment, self).__init__()
+        if string is None:
+            self.__string = None
+        else:
+            self.__string = percent_decode(string)
+
+    def __eq__(self, other):
+        other = self.__cast(other)
+        return self.__string == other.__string
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash(self.string)
+
+    @property
+    def string(self):
+        if self.__string is None:
+            return None
+        return percent_encode(self.__string)
+
+
 class Path(Part):
 
     @classmethod
@@ -426,7 +461,7 @@ class Path(Part):
         if string is None:
             self.__segments = None
         else:
-            self.__segments = list(map(percent_decode, string.split("/")))
+            self.__segments = list(map(PathSegment, string.split("/")))
 
     def __eq__(self, other):
         other = self.__cast(other)
@@ -442,7 +477,7 @@ class Path(Part):
     def string(self):
         if self.__segments is None:
             return None
-        return "/".join(map(percent_encode, self.__segments))
+        return "/".join(segment.string for segment in self.__segments)
 
     @property
     def segments(self):
@@ -1012,7 +1047,7 @@ class URI(Part):
         if self.__authority is not None and not self.__path:
             return Path("/" + ustr(relative_path_reference))
         elif "/" in self.__path.string:
-            segments = self.__path.segments
+            segments = [segment.string for segment in self.__path.segments]
             segments[-1] = ""
             return Path("/".join(segments) + ustr(relative_path_reference))
         else:

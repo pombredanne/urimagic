@@ -18,7 +18,7 @@
 
 from __future__ import unicode_literals
 
-from urimagic import Path
+from urimagic import Path, PathSegment
 
 
 def test_can_parse_none_path():
@@ -181,3 +181,39 @@ def test_cant_remove_trailing_slash_from_none_path():
     path = Path(None)
     path = path.without_trailing_slash()
     assert path.string is None
+
+
+def test_can_parse_none_path_segment():
+    path_segment = PathSegment(None)
+    assert str(path_segment) == ""
+    assert path_segment.string is None
+
+
+def test_can_parse_empty_path_segment():
+    path_segment = PathSegment("")
+    assert str(path_segment) == ""
+    assert path_segment.string == ""
+
+
+def test_path_segment_equality():
+    path_segment_1 = PathSegment("foo")
+    path_segment_2 = PathSegment("foo")
+    assert path_segment_1 == path_segment_2
+
+
+def test_path_segment_inequality():
+    path_segment_1 = PathSegment("foo")
+    path_segment_2 = PathSegment("bar")
+    assert path_segment_1 != path_segment_2
+
+
+def test_path_segment_equality_when_none():
+    path_segment = PathSegment(None)
+    none = None
+    assert path_segment == none
+
+
+def test_path_segment_is_hashable():
+    path_segment = PathSegment("/foo/bar")
+    hashed = hash(path_segment)
+    assert hashed

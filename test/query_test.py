@@ -165,3 +165,15 @@ def test_can_check_parameter_exists():
     query = Query("one=eins&two=zwei&three=drei&four=vier&five=fünf")
     assert ("two", "zwei") in query
     assert ("nine", "neun") not in query
+
+
+def test_old_slicing_method():
+    query = Query("one=eins&two=zwei&three=drei&four=vier&five=fünf")
+    bits = query.__getslice__(1, 3)
+    assert bits.string == "two=zwei&three=drei"
+
+
+def test_passing_a_slice_through_getitem():
+    query = Query("one=eins&two=zwei&three=drei&four=vier&five=fünf")
+    bits = query.__getitem__(slice(1, 3))
+    assert bits.string == "two=zwei&three=drei"
