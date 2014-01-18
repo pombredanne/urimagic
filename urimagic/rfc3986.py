@@ -273,10 +273,7 @@ class Authority(Part):
                 self.__port == other.__port)
 
     def __ne__(self, other):
-        other = self.__cast(other)
-        return (self.__user_info != other.__user_info or
-                self.__host != other.__host or
-                self.__port != other.__port)
+        return not self.__eq__(other)
 
     def __hash__(self):
         return hash(self.string)
@@ -436,8 +433,7 @@ class Path(Part):
         return self.__segments == other.__segments
 
     def __ne__(self, other):
-        other = self.__cast(other)
-        return self.__segments != other.__segments
+        return not self.__eq__(other)
 
     def __hash__(self):
         return hash(self.string)
@@ -645,12 +641,7 @@ class URI(Part):
                 self.__fragment == other.__fragment)
 
     def __ne__(self, other):
-        other = self.__cast(other)
-        return (self.__scheme != other.__scheme or
-                self.__authority != other.__authority or
-                self.__path != other.__path or
-                self.__query != other.__query or
-                self.__fragment != other.__fragment)
+        return not self.__eq__(other)
 
     def __hash__(self):
         return hash(self.string)

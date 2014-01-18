@@ -153,8 +153,7 @@ class URITemplate(Part):
         return self.__template == other.__template
 
     def __ne__(self, other):
-        other = self.__cast(other)
-        return self.__template != other.__template
+        return not self.__eq__(other)
 
     def __hash__(self):
         return hash(self.string)
