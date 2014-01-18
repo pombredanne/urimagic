@@ -89,19 +89,15 @@ Queries
 .. code-block:: python
 
     >>> from urimagic import Query
-    >>> query = Query("cake=nice&mushrooms=yuk")
-    >>> query["cake"]
+    >>> query = Query("cake=nice&cake=sweet&mushrooms=yuk")
+    >>> query.get("cake")
     'nice'
-    >>> query["mushrooms"]
+    >>> query.get("cake", 1)
+    'sweet'
+    >>> query.get("mushrooms")
     'yuk'
     >>> query.string
-    'cake=nice&mushrooms=yuk'
-    >>> Query.encode(["Mulder", "Scully"])
-    'Mulder&Scully'
-    >>> Query.encode({"Mulder": "believer", "Scully": "sceptic"})
-    'Mulder=believer&Scully=sceptic'
-    >>> Query.decode("Mulder=believer&Scully=sceptic")
-    [('Mulder', 'believer'), ('Scully', 'sceptic')]
+    'cake=nice&cake=sweet&mushrooms=yuk'
 
 Resolving new URIs
 ------------------
