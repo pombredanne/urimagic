@@ -574,23 +574,17 @@ class URI(Part):
 
     def __init__(self, value):
         super(URI, self).__init__()
+        self.__scheme = None
+        self.__authority = None
+        self.__path = None
+        self.__query = None
+        self.__fragment = None
         try:
             if value.__uri__ is None:
-                self.__scheme = None
-                self.__authority = None
-                self.__path = None
-                self.__query = None
-                self.__fragment = None
                 return
         except AttributeError:
             pass
-        if value is None:
-            self.__scheme = None
-            self.__authority = None
-            self.__path = None
-            self.__query = None
-            self.__fragment = None
-        else:
+        if value is not None:
             try:
                 value = ustr(value.__uri__)
             except AttributeError:
