@@ -104,6 +104,18 @@ class Part(object):
     """ Internal base class for all URI component parts.
     """
 
+    @classmethod
+    def _cast(cls, obj):
+        """ Convert the object supplied to an instance of this class, if
+        possible.
+        """
+        if obj is None:
+            return cls(None)
+        elif isinstance(obj, cls):
+            return obj
+        else:
+            return cls(ustr(obj))
+
     def __init__(self):
         pass
 
@@ -135,15 +147,6 @@ class Part(object):
 
 class FrozenParameterList(Part):
 
-    @classmethod
-    def __cast(cls, obj):
-        if obj is None:
-            return cls(None)
-        elif isinstance(obj, cls):
-            return obj
-        else:
-            return cls(ustr(obj))
-
     def __init__(self, string, separator):
         super(FrozenParameterList, self).__init__()
         self.__separator = separator
@@ -160,7 +163,7 @@ class FrozenParameterList(Part):
                 self.__parameters.append(key, value)
 
     def __eq__(self, other):
-        other = self.__cast(other)
+        other = self._cast(other)
         return (self.__parameters == other.__parameters and
                 self.__separator == other.__separator)
 
@@ -234,15 +237,6 @@ class Authority(Part):
     """
 
     @classmethod
-    def __cast(cls, obj):
-        if obj is None:
-            return cls(None)
-        elif isinstance(obj, cls):
-            return obj
-        else:
-            return cls(ustr(obj))
-
-    @classmethod
     def _parse_host_port(cls, string):
         if ":" in string:
             host, port = string.rpartition(":")[0::2]
@@ -267,13 +261,10 @@ class Authority(Part):
             self.__host, self.__port = self._parse_host_port(string)
 
     def __eq__(self, other):
-        other = self.__cast(other)
+        other = self._cast(other)
         return (self.__user_info == other.__user_info and
                 self.__host == other.__host and
                 self.__port == other.__port)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
 
     def __hash__(self):
         return hash(self.string)
@@ -418,15 +409,6 @@ class PathSegment(FrozenParameterList):
 
 class Path(Part):
 
-    @classmethod
-    def __cast(cls, obj):
-        if obj is None:
-            return cls(None)
-        elif isinstance(obj, cls):
-            return obj
-        else:
-            return cls(ustr(obj))
-
     def __init__(self, string):
         super(Path, self).__init__()
         if string is None:
@@ -435,11 +417,8 @@ class Path(Part):
             self.__segments = list(map(PathSegment, string.split("/")))
 
     def __eq__(self, other):
-        other = self.__cast(other)
+        other = self._cast(other)
         return self.__segments == other.__segments
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
 
     def __hash__(self):
         return hash(self.string)
@@ -593,15 +572,6 @@ class URI(Part):
             path = Path(value)
         return authority, path
 
-    @classmethod
-    def __cast(cls, obj):
-        if obj is None:
-            return cls(None)
-        elif isinstance(obj, cls):
-            return obj
-        else:
-            return cls(ustr(obj))
-
     def __init__(self, value):
         super(URI, self).__init__()
         try:
@@ -639,15 +609,12 @@ class URI(Part):
             self.__authority, self.__path = self._parse_hierarchical_part(value)
 
     def __eq__(self, other):
-        other = self.__cast(other)
+        other = self._cast(other)
         return (self.__scheme == other.__scheme and
                 self.__authority == other.__authority and
                 self.__path == other.__path and
                 self.__query == other.__query and
                 self.__fragment == other.__fragment)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
 
     def __hash__(self):
         return hash(self.string)
@@ -1035,7 +1002,7 @@ class URI(Part):
         """
         if reference is None:
             return None
-        reference = self.__cast(reference)
+        reference = self._cast(reference)
         target = URI(None)
         if not strict and reference.__scheme == self.__scheme:
             reference_scheme = None
