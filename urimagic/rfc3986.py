@@ -410,39 +410,10 @@ class Authority(Part):
         return self.__user_info
 
 
-class PathSegment(Part):
-
-    @classmethod
-    def __cast(cls, obj):
-        if obj is None:
-            return cls(None)
-        elif isinstance(obj, cls):
-            return obj
-        else:
-            return cls(ustr(obj))
+class PathSegment(FrozenParameterList):
 
     def __init__(self, string):
-        super(PathSegment, self).__init__()
-        if string is None:
-            self.__string = None
-        else:
-            self.__string = percent_decode(string)
-
-    def __eq__(self, other):
-        other = self.__cast(other)
-        return self.__string == other.__string
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash(self.string)
-
-    @property
-    def string(self):
-        if self.__string is None:
-            return None
-        return percent_encode(self.__string)
+        super(PathSegment, self).__init__(string, ";")
 
 
 class Path(Part):

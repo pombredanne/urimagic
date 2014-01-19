@@ -75,7 +75,7 @@ Paths
 
     >>> from urimagic import Path
     >>> Path("/foo/bar").segments
-    ['', 'foo', 'bar']
+    [PathSegment(''), PathSegment('foo'), PathSegment('bar')]
     >>> Path("/foo/bar").with_trailing_slash()
     Path('/foo/bar/')
     >>> Path("/foo/bar/").without_trailing_slash()

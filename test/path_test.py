@@ -214,6 +214,18 @@ def test_path_segment_equality_when_none():
 
 
 def test_path_segment_is_hashable():
-    path_segment = PathSegment("/foo/bar")
+    path_segment = PathSegment("foo")
     hashed = hash(path_segment)
     assert hashed
+
+
+def test_can_parse_path_segment_with_params():
+    path_segment = PathSegment("name;version=1.2")
+    assert str(path_segment) == "name;version=1.2"
+    assert path_segment.string == "name;version=1.2"
+    assert list(path_segment) == [("name", None), ("version", "1.2")]
+    assert len(path_segment) == 2
+    assert path_segment[0] == ("name", None)
+    assert path_segment[1] == ("version", "1.2")
+    assert path_segment.get("name") is None
+    assert path_segment.get("version") == "1.2"
