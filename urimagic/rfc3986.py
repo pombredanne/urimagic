@@ -33,7 +33,7 @@ from .util import ustr
 
 __all__ = ["general_delimiters", "subcomponent_delimiters",
            "reserved", "unreserved", "percent_encode", "percent_decode",
-           "Authority", "Path", "PathSegment", "Query", "URI"]
+           "ParameterString", "Authority", "Path", "Query", "URI"]
 
 
 # RFC 3986 § 2.2.
@@ -125,6 +125,15 @@ class Part(object):
     def __str__(self):
         return self.string or ""
 
+    def __eq__(self, other):
+        if other is None:
+            return self.string is None
+        try:
+            other_string = other.string
+        except AttributeError:
+            other_string = self._cast(other).string
+        return self.string == other_string
+
     def __ne__(self, other):
         return not self.__eq__(other)
 
@@ -145,10 +154,10 @@ class Part(object):
         raise NotImplementedError()
 
 
-class FrozenParameterList(Part):
+class ParameterString(Part):
 
     def __init__(self, string, separator):
-        super(FrozenParameterList, self).__init__()
+        super(ParameterString, self).__init__()
         self.__separator = separator
         self.__none = string is None
         self.__parameters = KeyValueList()
@@ -161,11 +170,6 @@ class FrozenParameterList(Part):
                 else:
                     key, value = percent_decode(bit), None
                 self.__parameters.append(key, value)
-
-    def __eq__(self, other):
-        other = self._cast(other)
-        return (self.__parameters == other.__parameters and
-                self.__separator == other.__separator)
 
     def __len__(self):
         return self.__parameters.__len__()
@@ -187,14 +191,14 @@ class FrozenParameterList(Part):
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            out = FrozenParameterList("", self.__separator)
+            out = ParameterString("", self.__separator)
             out.__parameters.extend(self.__parameters.__getitem__(index))
             return out
         else:
             return self.__parameters.__getitem__(index)
 
     def __getslice__(self, start, stop):
-        out = FrozenParameterList("", self.__separator)
+        out = ParameterString("", self.__separator)
         out.__parameters.extend(self.__parameters.__getslice__(start, stop))
         return out
 
@@ -204,7 +208,8 @@ class FrozenParameterList(Part):
         for i, value in enumerate(self.__parameters.get(name)):
             if i == index:
                 return value
-        raise IndexError("Parameter {0} does not have {1} values".format(name, index))
+        raise IndexError("Parameter {0} does not have {1} "
+                         "values".format(name, index))
 
     def get_all(self, name):
         if not self.__parameters.has_key(name):
@@ -259,12 +264,6 @@ class Authority(Part):
             else:
                 self.__user_info = None
             self.__host, self.__port = self._parse_host_port(string)
-
-    def __eq__(self, other):
-        other = self._cast(other)
-        return (self.__user_info == other.__user_info and
-                self.__host == other.__host and
-                self.__port == other.__port)
 
     def __hash__(self):
         return hash(self.string)
@@ -401,12 +400,6 @@ class Authority(Part):
         return self.__user_info
 
 
-class PathSegment(FrozenParameterList):
-
-    def __init__(self, string):
-        super(PathSegment, self).__init__(string, ";")
-
-
 class Path(Part):
 
     def __init__(self, string):
@@ -414,11 +407,7 @@ class Path(Part):
         if string is None:
             self.__segments = None
         else:
-            self.__segments = list(map(PathSegment, string.split("/")))
-
-    def __eq__(self, other):
-        other = self._cast(other)
-        return self.__segments == other.__segments
+            self.__segments = list(map(percent_decode, string.split("/")))
 
     def __hash__(self):
         return hash(self.string)
@@ -427,7 +416,7 @@ class Path(Part):
     def string(self):
         if self.__segments is None:
             return None
-        return "/".join(segment.string for segment in self.__segments)
+        return "/".join(map(percent_encode, self.__segments))
 
     @property
     def segments(self):
@@ -489,10 +478,15 @@ class Path(Part):
             return self
 
 
-class Query(FrozenParameterList):
+class Query(ParameterString):
+
+    SEPARATOR = "&"
 
     def __init__(self, string):
-        super(Query, self).__init__(string, "&")
+        super(Query, self).__init__(string, self.SEPARATOR)
+
+    def __hash__(self):
+        return hash(self.string)
 
 
 class URI(Part):
@@ -601,14 +595,6 @@ class URI(Part):
             value, self.__query = self._partition_query(value)
             # hierarchical part
             self.__authority, self.__path = self._parse_hierarchical_part(value)
-
-    def __eq__(self, other):
-        other = self._cast(other)
-        return (self.__scheme == other.__scheme and
-                self.__authority == other.__authority and
-                self.__path == other.__path and
-                self.__query == other.__query and
-                self.__fragment == other.__fragment)
 
     def __hash__(self):
         return hash(self.string)
@@ -979,7 +965,7 @@ class URI(Part):
         if self.__authority is not None and not self.__path:
             return Path("/" + ustr(relative_path_reference))
         elif "/" in self.__path.string:
-            segments = [segment.string for segment in self.__path.segments]
+            segments = self.__path.segments
             segments[-1] = ""
             return Path("/".join(segments) + ustr(relative_path_reference))
         else:

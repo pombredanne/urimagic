@@ -257,10 +257,41 @@ def test_uri_inequality():
     assert uri1 != uri2
 
 
+def test_uri_equality_with_string():
+    uri = URI("http://example.com/")
+    string = "http://example.com/"
+    assert uri == string
+
+
+def test_uri_equality_with_string_containing_space():
+    uri = URI("http://example.com/foo bar")
+    string = "http://example.com/foo bar"
+    assert uri == string
+
+
+def test_uri_equality_with_string_containing_encoded_space():
+    uri = URI("http://example.com/foo bar")
+    string = "http://example.com/foo%20bar"
+    assert uri == string
+
+
 def test_uri_equality_when_none():
     uri = URI(None)
     none = None
     assert uri == none
+
+
+def test_can_cast_none_uri():
+    uri = URI._cast(None)
+    none = None
+    assert uri == none
+
+
+def test_can_cast_existing_uri():
+    existing_uri = URI("http://example.com/")
+    uri = URI._cast(existing_uri)
+    string = "http://example.com/"
+    assert uri == string
 
 
 def test_uri_is_hashable():

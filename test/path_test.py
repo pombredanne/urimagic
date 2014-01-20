@@ -18,7 +18,7 @@
 
 from __future__ import unicode_literals
 
-from urimagic import Path, PathSegment
+from urimagic import Path, ParameterString, URI
 
 
 def test_can_parse_none_path():
@@ -61,6 +61,18 @@ def test_path_inequality():
     path1 = Path("/foo/bar")
     path2 = Path("/foo/bar/baz")
     assert path1 != path2
+
+
+def test_path_equality_with_string_containing_space():
+    path = Path("/foo bar")
+    string = "/foo bar"
+    assert path == string
+
+
+def test_path_equality_with_string_containing_encoded_space():
+    path = Path("/foo bar")
+    string = "/foo%20bar"
+    assert path == string
 
 
 def test_path_equality_when_none():
@@ -177,50 +189,51 @@ def test_cannot_remove_trailing_slash_from_empty_string():
     assert path.string == ""
 
 
-def test_cant_remove_trailing_slash_from_none_path():
+def test_cannot_remove_trailing_slash_from_none_path():
     path = Path(None)
     path = path.without_trailing_slash()
     assert path.string is None
 
 
-def test_can_parse_none_path_segment():
-    path_segment = PathSegment(None)
+def test_can_parse_none_parameter_string():
+    path_segment = ParameterString(None, ";")
     assert str(path_segment) == ""
     assert path_segment.string is None
 
 
-def test_can_parse_empty_path_segment():
-    path_segment = PathSegment("")
+def test_can_parse_empty_parameter_string():
+    path_segment = ParameterString("", ";")
     assert str(path_segment) == ""
     assert path_segment.string == ""
 
 
-def test_path_segment_equality():
-    path_segment_1 = PathSegment("foo")
-    path_segment_2 = PathSegment("foo")
+def test_parameter_string_equality():
+    path_segment_1 = ParameterString("foo", ";")
+    path_segment_2 = ParameterString("foo", ";")
     assert path_segment_1 == path_segment_2
 
 
-def test_path_segment_inequality():
-    path_segment_1 = PathSegment("foo")
-    path_segment_2 = PathSegment("bar")
+def test_parameter_string_inequality():
+    path_segment_1 = ParameterString("foo", ";")
+    path_segment_2 = ParameterString("bar", ";")
     assert path_segment_1 != path_segment_2
 
 
-def test_path_segment_equality_when_none():
-    path_segment = PathSegment(None)
+def test_parameter_string_equality_when_none():
+    path_segment = ParameterString(None, ";")
     none = None
     assert path_segment == none
 
 
-def test_path_segment_is_hashable():
-    path_segment = PathSegment("foo")
+def test_parameter_string_is_hashable():
+    path_segment = ParameterString("foo", ";")
     hashed = hash(path_segment)
     assert hashed
 
 
-def test_can_parse_path_segment_with_params():
-    path_segment = PathSegment("name;version=1.2")
+def test_can_parse_parameter_string_with_params():
+    uri = URI("http://example.com/foo/name;version=1.2/bar")
+    path_segment = ParameterString(uri.path.segments[2], ";")
     assert str(path_segment) == "name;version=1.2"
     assert path_segment.string == "name;version=1.2"
     assert list(path_segment) == [("name", None), ("version", "1.2")]
