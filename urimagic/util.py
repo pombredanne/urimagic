@@ -21,7 +21,12 @@ try:
 except NameError:
     # Python 3
     def ustr(s, encoding="utf-8"):
-        return str(s)
+        if isinstance(s, str):
+            return s
+        try:
+            return s.decode(encoding)
+        except AttributeError:
+            return str(s)
 else:
     # Python 2
     def ustr(s, encoding="utf-8"):
